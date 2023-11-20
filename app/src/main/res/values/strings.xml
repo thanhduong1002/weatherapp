@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">WeatherApp</string>
+    <string name="location">Location</string>
+    <string name="updated_at">Updated at</string>
+    <string name="clear_sky">Clear Sky</string>
+    <string name="_24_c">24°C</string>
+    <string name="min_temp">Min temp</string>
+    <string name="max_temp">Max temp</string>
+    <string name="sunrise">Sunrise</string>
+    <string name="_5_30_am">5:30 AM</string>
+    <string name="sunset">Sunset</string>
+    <string name="_5_30_pm">5:30 PM</string>
+    <string name="created_by">Created by</string>
+    <string name="duke">Duke</string>
+    <string name="pressure">Pressure</string>
+    <string name="humidity">Humidity</string>
+    <string name="_80">80%</string>
+    <string name="_3_56_m_s">3.56 m/s</string>
+    <string name="wind">Wind</string>
+    <string name="_1000_hpa">1000 hPa</string>
+    <string name="apikey">cc51f4703a68c68a3ea02b463d320bcc</string>
+    <string name="icon_weather">icon weather</string>
+    <string name="update_at">Update at:</string>
+    <string name="today">Today</string>
+    <string name="_5_days">5 Days</string>
+    <string name="ok">OK</string>
+</resources>
