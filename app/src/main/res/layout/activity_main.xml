@@ -126,7 +126,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:background="#3CF1EBF1"
+            android:background="@drawable/linear_rounded_corner"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="8dp">
@@ -159,7 +159,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:background="#3CF1EBF1"
+            android:background="@drawable/linear_rounded_corner"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="8dp">
@@ -193,7 +193,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:background="#3CF1EBF1"
+            android:background="@drawable/linear_rounded_corner"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="8dp">
@@ -238,7 +238,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:background="#3CF1EBF1"
+            android:background="@drawable/linear_rounded_corner"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="8dp">
@@ -271,7 +271,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:background="#3CF1EBF1"
+            android:background="@drawable/linear_rounded_corner"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="8dp">
@@ -304,7 +304,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="5dp"
             android:layout_weight="1"
-            android:background="#3CF1EBF1"
+            android:background="@drawable/linear_rounded_corner"
             android:gravity="center"
             android:orientation="vertical"
             android:padding="8dp">

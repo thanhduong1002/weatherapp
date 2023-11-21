@@ -13,7 +13,6 @@ import android.view.Window
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
@@ -51,40 +50,54 @@ class MainActivity : AppCompatActivity() {
         binding.spinnerLocation.adapter = adapter
         binding.spinnerLocation.setPopupBackgroundResource(R.drawable.gradient_bg)
 
-        binding.spinnerLocation.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val selectedLocation = locations[position]
+        binding.spinnerLocation.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    val selectedLocation = locations[position]
 
-                val selectedDistrict = daNangDistricts.firstOrNull { it[0] == selectedLocation }
+                    val selectedDistrict = daNangDistricts.firstOrNull { it[0] == selectedLocation }
 
-                if (selectedDistrict != null) {
-                    val lat = selectedDistrict[1]
-                    val lon = selectedDistrict[2]
+                    if (selectedDistrict != null) {
+                        val lat = selectedDistrict[1]
+                        val lon = selectedDistrict[2]
 
-                    weatherViewModel.callWeatherAPI(lat, lon, getString(R.string.apikey))
+                        weatherViewModel.callWeatherAPI(lat, lon, getString(R.string.apikey))
+                    }
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+
                 }
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-        }
-
         weatherViewModel = ViewModelProvider(this)[WeatherViewModel::class.java]
 
-        weatherViewModel.weatherLiveData.observe(this) {weather ->
-            binding.status.text = "${weather.weather[0].description?.let { capitalizeEachWord(it) }}"
-            Picasso.get().load("https://openweathermap.org/img/w/${weather.weather[0].icon}.png").into(binding.icon)
+        weatherViewModel.weatherLiveData.observe(this) { weather ->
+            binding.status.text =
+                "${weather.weather[0].description?.let { capitalizeEachWord(it) }}"
+            Picasso.get().load("https://openweathermap.org/img/w/${weather.weather[0].icon}.png")
+                .into(binding.icon)
             binding.temp.text = "${weather.main?.temp?.let { kelvinToCelsius(it) }}°C"
-            binding.textMinTemp.text = "Min temp: ${weather.main?.tempMin?.let { kelvinToCelsius(it) }}°C"
-            binding.textMaxTemp.text = "Max temp: ${weather.main?.tempMax?.let { kelvinToCelsius(it) }}°C"
+            binding.textMinTemp.text =
+                "Min temp: ${weather.main?.tempMin?.let { kelvinToCelsius(it) }}°C"
+            binding.textMaxTemp.text =
+                "Max temp: ${weather.main?.tempMax?.let { kelvinToCelsius(it) }}°C"
             binding.pressure.text = "${weather.main?.pressure} hPa"
             binding.humidity.text = "${weather.main?.humidity}%"
             binding.wind.text = "${weather.wind?.speed} m/s"
-            binding.sunrise.text = "${weather.sys?.sunrise?.toLong()
-                ?.let { convertUnixTimestampToTime(it) }}"
-            binding.sunset.text = "${weather.sys?.sunset?.toLong()
-                ?.let { convertUnixTimestampToTime(it) }}"
+            binding.sunrise.text = "${
+                weather.sys?.sunrise?.toLong()
+                    ?.let { convertUnixTimestampToTime(it) }
+            }"
+            binding.sunset.text = "${
+                weather.sys?.sunset?.toLong()
+                    ?.let { convertUnixTimestampToTime(it) }
+            }"
             binding.textUpdate?.text = "Update at: $currentDateString"
         }
 
@@ -92,9 +105,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.textInfo.setOnClickListener {
             showPopupDialog()
-            Log.d("showPopupDialog", "showPopupDialog: ")
         }
-        Log.d("onCreate", "onCreate: Completed")
     }
 
     private fun kelvinToCelsius(kelvin: Double): Double {
@@ -121,7 +132,6 @@ class MainActivity : AppCompatActivity() {
         }
         return capitalizedWords.joinToString(" ")
     }
-
 
     @SuppressLint("SimpleDateFormat")
     private fun getCurrentDateTime() {
