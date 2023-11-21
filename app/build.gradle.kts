@@ -52,5 +52,5 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.0.0")
     implementation("com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0")
     implementation("com.squareup.picasso:picasso:2.8")
-//    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
