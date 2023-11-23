@@ -13,7 +13,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
+        multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -53,4 +53,5 @@ dependencies {
     implementation("com.jakewharton.picasso:picasso2-okhttp3-downloader:1.1.0")
     implementation("com.squareup.picasso:picasso:2.8")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("androidx.multidex:multidex:2.0.1")
 }
