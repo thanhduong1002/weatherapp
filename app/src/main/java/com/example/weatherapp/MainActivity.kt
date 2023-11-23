@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.AdapterView
@@ -17,10 +16,13 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.weatherapp.adapter.DetailForecastAdapter
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.viewmodel.WeatherViewModel
 import com.squareup.picasso.Picasso
 import java.text.DecimalFormat
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,7 +30,7 @@ import java.util.Locale
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherViewModel: WeatherViewModel
-    private var currentDateString: String = ""
+    private lateinit var detailForecastAdapter: DetailForecastAdapter
     private val daNangDistricts = arrayOf(
         arrayOf("Hoa Vang", 16.083, 108.0),
         arrayOf("Lien Chieu", 16.0944, 108.1742),
@@ -37,18 +39,31 @@ class MainActivity : AppCompatActivity() {
         arrayOf("Son Tra", 16.0820, 108.2244)
     )
 
-    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupLocationSpinner()
+
+        weatherViewModel = ViewModelProvider(this)[WeatherViewModel::class.java]
+
+        observeWeatherLiveData()
+        observeForecastLiveData()
+
+        setupInitialWeatherAndForecast()
+
+        binding.seeMoreLinear.setOnClickListener {
+            showPopupDialog()
+        }
+    }
+
+    private fun setupLocationSpinner() {
         val locations = arrayOf("Hoa Vang", "Lien Chieu", "Thanh Khe", "Ngu Hanh Son", "Son Tra")
 
         val adapter = ArrayAdapter(this, R.layout.text_dropdown, locations)
         adapter.setDropDownViewResource(R.layout.spinner_text_dropdown)
         binding.spinnerLocation.adapter = adapter
-        binding.spinnerLocation.setPopupBackgroundResource(R.drawable.gradient_bg)
 
         binding.spinnerLocation.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
@@ -59,7 +74,6 @@ class MainActivity : AppCompatActivity() {
                     id: Long
                 ) {
                     val selectedLocation = locations[position]
-
                     val selectedDistrict = daNangDistricts.firstOrNull { it[0] == selectedLocation }
 
                     if (selectedDistrict != null) {
@@ -67,50 +81,64 @@ class MainActivity : AppCompatActivity() {
                         val lon = selectedDistrict[2]
 
                         weatherViewModel.callWeatherAPI(lat, lon, getString(R.string.apikey))
+                        weatherViewModel.callForecastAPI(lat, lon, getString(R.string.apikey))
                     }
                 }
 
                 override fun onNothingSelected(parent: AdapterView<*>?) {
-
                 }
             }
+    }
 
-        weatherViewModel = ViewModelProvider(this)[WeatherViewModel::class.java]
-
+    @SuppressLint("SetTextI18n")
+    private fun observeWeatherLiveData() {
         weatherViewModel.weatherLiveData.observe(this) { weather ->
-            binding.status.text =
-                "${weather.weather[0].description?.let { capitalizeEachWord(it) }}"
-            Picasso.get().load("https://openweathermap.org/img/w/${weather.weather[0].icon}.png")
-                .into(binding.icon)
-            binding.temp.text = "${weather.main?.temp?.let { kelvinToCelsius(it) }}°C"
-            binding.textMinTemp.text =
-                "Min temp: ${weather.main?.tempMin?.let { kelvinToCelsius(it) }}°C"
-            binding.textMaxTemp.text =
-                "Max temp: ${weather.main?.tempMax?.let { kelvinToCelsius(it) }}°C"
-            binding.pressure.text = "${weather.main?.pressure} hPa"
-            binding.humidity.text = "${weather.main?.humidity}%"
-            binding.wind.text = "${weather.wind?.speed} m/s"
-            binding.sunrise.text = "${
-                weather.sys?.sunrise?.toLong()
-                    ?.let { convertUnixTimestampToTime(it) }
-            }"
-            binding.sunset.text = "${
-                weather.sys?.sunset?.toLong()
-                    ?.let { convertUnixTimestampToTime(it) }
-            }"
-            binding.textUpdate?.text = "Update at: $currentDateString"
-        }
-
-        weatherViewModel.callWeatherAPI(16.083, 108.0, getString(R.string.apikey))
-
-        binding.textInfo.setOnClickListener {
-            showPopupDialog()
+            binding.apply {
+                status.text = weather.weather[0].description?.let { capitalizeEachWord(it) }
+                Picasso.get()
+                    .load("https://openweathermap.org/img/w/${weather.weather[0].icon}.png")
+                    .into(icon)
+                temp.text = "${weather.main?.temp?.let { kelvinToCelsius(it) }}°C"
+                textMinTemp.text =
+                    "Min temp: ${weather.main?.tempMin?.let { kelvinToCelsius(it) }}°C"
+                textMaxTemp.text =
+                    "Max temp: ${weather.main?.tempMax?.let { kelvinToCelsius(it) }}°C"
+                pressure.text = "${weather.main?.pressure} hPa"
+                humidity.text = "${weather.main?.humidity}%"
+                wind.text = "${weather.wind?.speed} m/s"
+                sunrise.text =
+                    "${weather.sys?.sunrise?.toLong()?.let { convertUnixTimestampToTime(it) }}"
+                sunset.text =
+                    "${weather.sys?.sunset?.toLong()?.let { convertUnixTimestampToTime(it) }}"
+                textUpdate.text = "Update at: ${getCurrentDateTime()}"
+            }
         }
     }
+
+    private fun observeForecastLiveData() {
+        weatherViewModel.forecastLiveData.observe(this) { forecast ->
+            detailForecastAdapter = DetailForecastAdapter(forecast)
+            binding.detailForecastRecycler.layoutManager =
+                LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            binding.detailForecastRecycler.adapter = detailForecastAdapter
+        }
+    }
+
+    private fun setupInitialWeatherAndForecast() {
+        weatherViewModel.callWeatherAPI(16.083, 108.0, getString(R.string.apikey))
+        weatherViewModel.callForecastAPI(16.083, 108.0, getString(R.string.apikey))
+
+        detailForecastAdapter = DetailForecastAdapter(emptyList())
+        binding.detailForecastRecycler.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.detailForecastRecycler.adapter = detailForecastAdapter
+    }
+
 
     private fun kelvinToCelsius(kelvin: Double): Double {
         val celsius = kelvin - 273.15
         val decimalFormat = DecimalFormat("#.##")
+
         return decimalFormat.format(celsius).toDouble()
     }
 
@@ -130,16 +158,16 @@ class MainActivity : AppCompatActivity() {
                 ) else it.toString()
             }
         }
+
         return capitalizedWords.joinToString(" ")
     }
 
     @SuppressLint("SimpleDateFormat")
-    private fun getCurrentDateTime() {
+    private fun getCurrentDateTime(): String {
         val currentDate = Date()
         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
-        Log.d("currentDate", "currentDate: ${formatter.format(currentDate)}")
-        currentDateString = formatter.format(currentDate)
+        return formatDateTime(formatter.format(currentDate))
     }
 
     private fun showPopupDialog() {
@@ -171,5 +199,19 @@ class MainActivity : AppCompatActivity() {
         }
 
         dialog.show()
+    }
+
+    private fun formatDateTime(inputDateTime: String): String {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("h:mm a dd/MM/yyyy", Locale.getDefault())
+
+        try {
+            val date = inputFormat.parse(inputDateTime)
+            return outputFormat.format(date)
+        } catch (e: ParseException) {
+            e.printStackTrace()
+        }
+
+        return ""
     }
 }

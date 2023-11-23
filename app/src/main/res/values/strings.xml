@@ -22,6 +22,16 @@
     <string name="icon_weather">icon weather</string>
     <string name="update_at">Update at:</string>
     <string name="today">Today</string>
-    <string name="_5_days">5 Days</string>
+    <string name="_5_days">5 Day / 3 Hour Forecast</string>
     <string name="ok">OK</string>
+    <string name="in_which_mode_would_you_like_to_view_it">In which mode would you like to view it?</string>
+    <string name="detail_forecast">Detail Forecast</string>
+    <string name="icon_edit_location">Icon edit location</string>
+    <string name="icon_sunrise">Icon sunrise</string>
+    <string name="icon_sunset">Icon sunset</string>
+    <string name="icon_see_more">Icon see more</string>
+    <string name="icon_pressure">Icon pressure</string>
+    <string name="icon_humidity">Icon humidity</string>
+    <string name="icon_wind">Icon wind</string>
+    <string name="_0_00">0:00</string>
 </resources>

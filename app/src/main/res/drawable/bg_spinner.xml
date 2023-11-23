@@ -11,13 +11,13 @@
 
                     <stroke android:width="0.33dp" android:color="#0fb1fa" />
 
-                    <corners android:radius="0dp" />
+                    <corners android:radius="12dp" />
 
                     <padding android:bottom="3dp" android:left="3dp" android:right="3dp" android:top="3dp" />
                 </shape>
             </item>
 
-            <item android:right="5dp" android:gravity="center_vertical|right" android:drawable="@drawable/arrow_down_gray" />
+            <item android:gravity="center_vertical|right" android:drawable="@drawable/arrow_down_gray" />
 
         </layer-list>
 
