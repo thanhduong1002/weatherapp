@@ -180,6 +180,9 @@ class MainActivity : AppCompatActivity() {
         val radioGroup: RadioGroup = dialog.findViewById(R.id.radioGroup)
         val buttonOK: Button = dialog.findViewById(R.id.buttonOK)
 
+        val radioButtonToday: RadioButton? = dialog.findViewById(R.id.radioButtonToday)
+        radioButtonToday?.isChecked = true
+
         buttonOK.setOnClickListener {
             val selectedRadioButtonId = radioGroup.checkedRadioButtonId
 
@@ -189,6 +192,10 @@ class MainActivity : AppCompatActivity() {
 
                 if (selectedText == getString(R.string._5_days)) {
                     val intent = Intent(this, StatictisActivity::class.java)
+
+                    startActivity(intent)
+                } else if (selectedText == getString(R.string.statistic_forecast)) {
+                    val intent = Intent(this, StatisticForecastActivity::class.java)
 
                     startActivity(intent)
                 }
