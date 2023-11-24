@@ -3,17 +3,29 @@ package com.example.weatherapp
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.lifecycle.ViewModelProvider
 import com.example.weatherapp.databinding.ActivityStatisticForecastBinding
+import com.example.weatherapp.model.ChartTopic
 import com.example.weatherapp.valueformat.CelsiusValueFormatter
+import com.example.weatherapp.valueformat.MyValueFormatter
+import com.example.weatherapp.valueformat.PressureValueFormatter
+import com.example.weatherapp.valueformat.SpeedValueFormatter
 import com.example.weatherapp.viewmodel.WeatherViewModel
 import com.github.mikephil.charting.components.Description
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.CombinedData
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -27,9 +39,13 @@ class StatisticForecastActivity : AppCompatActivity() {
     private lateinit var xAxis: XAxis
     private lateinit var yAxis: YAxis
     private lateinit var yRightAxis: YAxis
-    private var entries1: MutableList<Entry> = mutableListOf()
+    private val emptyEntries: List<Entry> = emptyList()
+    private val emptyBarEntries: List<BarEntry> = emptyList()
     private lateinit var lineDataSet: LineDataSet
+    private lateinit var barDataSet: BarDataSet
     private lateinit var lineData: LineData
+    private lateinit var barData: BarData
+    private var combinedData: CombinedData = CombinedData()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,53 +60,34 @@ class StatisticForecastActivity : AppCompatActivity() {
         weatherViewModel.callForecastAPI(16.083, 108.0, getString(R.string.apikey))
     }
 
-    private fun showLineChart() {
-        description.text = "Temperature Trend over Time"
+    private fun showChart() {
         description.textColor = Color.RED
         description.textSize = 16f
         description.setPosition(800f, 30f)
-        binding.lineChart.description = description
+        binding.mainChart.description = description
 
-        xAxis = binding.lineChart.xAxis
+        xAxis = binding.mainChart.xAxis
         xAxis.position = XAxis.XAxisPosition.BOTTOM
         xAxis.valueFormatter = IndexAxisValueFormatter(xValues)
         xAxis.granularity = 1f
         xAxis.labelCount = 32
 
-        yAxis = binding.lineChart.axisLeft
-        yAxis.axisMinimum = 0f
-        yAxis.axisMaximum = 50f
+        yAxis = binding.mainChart.axisLeft
         yAxis.axisLineWidth = 2f
         yAxis.axisLineColor = Color.BLACK
         yAxis.labelCount = 10
-        yAxis.valueFormatter = CelsiusValueFormatter()
 
-        yRightAxis = binding.lineChart.axisRight
+        yRightAxis = binding.mainChart.axisRight
         yRightAxis.setDrawLabels(false)
-
-        lineDataSet = LineDataSet(entries1, "Temp")
-        lineDataSet.color = Color.RED
-        lineDataSet.lineWidth = 3f
-
-        lineData = LineData(lineDataSet)
-
-        binding.lineChart.data = lineData
-
-        binding.lineChart.invalidate()
     }
 
     private fun observeForecastLiveData() {
         weatherViewModel.forecastLiveData.observe(this) { forecast ->
-            for ((index, item) in forecast.withIndex()) {
+            for (item in forecast) {
                 item.dt?.let { convertUnixTimestampToDateTime(it.toLong()) }
                     ?.let { xValues.add(it) }
-
-                val tempCelsius = item.main?.temp?.let { kelvinToCelsius(it) }
-                if (tempCelsius != null) {
-                    entries1.add(Entry(index.toFloat(), tempCelsius))
-                }
             }
-            showLineChart()
+            setupChartSpinner()
         }
     }
 
@@ -106,5 +103,174 @@ class StatisticForecastActivity : AppCompatActivity() {
         val decimalFormat = DecimalFormat("#.##")
 
         return decimalFormat.format(celsius).toFloat()
+    }
+
+    private fun setupChartSpinner() {
+        val topics =
+            arrayOf("Temperature", "Humidity", "Atmospheric pressure", "Cloudiness", "Wind speed")
+
+        val adapter = ArrayAdapter(this, R.layout.text_dropdown, topics)
+        adapter.setDropDownViewResource(R.layout.spinner_text_dropdown)
+        binding.spinnerChart.adapter = adapter
+
+        binding.spinnerChart.onItemSelectedListener =
+            object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(
+                    parent: AdapterView<*>?,
+                    view: View?,
+                    position: Int,
+                    id: Long
+                ) {
+                    setTopic(topics[position])
+                }
+
+                override fun onNothingSelected(parent: AdapterView<*>?) {
+                }
+            }
+    }
+
+    private fun setTopic(topic: String) {
+        when (topic) {
+            "Temperature" -> setEntryValues("Temperature")
+            "Humidity" -> setEntryValues("Humidity")
+            "Atmospheric pressure" -> setEntryValues("Atmospheric pressure")
+            "Cloudiness" -> setEntryValues("Cloudiness")
+            "Wind speed" -> setEntryValues("Wind speed")
+        }
+    }
+
+    private fun setEntryValues(topic: String) {
+        val chartTopic = when (topic) {
+            "Temperature" -> ChartTopic(
+                "Temperature Trend over Time",
+                mutableListOf(),
+                null,
+                "line",
+                topic
+            )
+
+            "Humidity" -> ChartTopic(
+                "Time-Based Humidity Chart",
+                mutableListOf(),
+                mutableListOf(),
+                "bar",
+                topic
+            )
+
+            "Atmospheric pressure" -> ChartTopic(
+                "Atmospheric pressure Trend over Time",
+                mutableListOf(),
+                null,
+                "line",
+                topic
+            )
+
+            "Cloudiness" -> ChartTopic(
+                "Time-Based Cloudiness Chart",
+                mutableListOf(),
+                mutableListOf(),
+                "bar",
+                topic
+            )
+
+            "Wind speed" -> ChartTopic(
+                "Wind speed pressure Trend over Time",
+                mutableListOf(),
+                null,
+                "line",
+                topic
+            )
+
+            else -> throw IllegalArgumentException("Unsupported topic: $topic")
+        }
+
+        for ((index, item) in weatherViewModel.forecastLiveData.value!!.withIndex()) {
+            when (topic) {
+                "Temperature" -> chartTopic.entryList.add(
+                    Entry(index.toFloat(), kelvinToCelsius(item.main?.temp ?: 0.0))
+                )
+
+                "Humidity" -> chartTopic.barEntryList!!.add(
+                    BarEntry(index.toFloat(), item.main?.humidity?.toFloat() ?: 0f)
+                )
+
+                "Atmospheric pressure" -> chartTopic.entryList.add(
+                    Entry(index.toFloat(), item.main?.pressure?.toFloat() ?: 0f)
+                )
+
+                "Cloudiness" -> chartTopic.barEntryList!!.add(
+                    BarEntry(index.toFloat(), item.clouds?.all?.toFloat() ?: 0f)
+                )
+
+                "Wind speed" -> chartTopic.entryList.add(
+                    Entry(index.toFloat(), item.wind?.speed?.toFloat() ?: 0f)
+                )
+            }
+        }
+
+        setDescriptionText(chartTopic.description)
+        setDataChart(chartTopic)
+    }
+
+
+    private fun setDescriptionText(title: String) {
+        description.text = title
+    }
+
+    private fun setDataChart(chartTopic: ChartTopic) {
+        showChart()
+
+        lineData = LineData(LineDataSet(emptyEntries, ""))
+        barData = BarData(BarDataSet(emptyBarEntries, ""))
+
+        if (chartTopic.chartType == "line") {
+            when (chartTopic.topicChart) {
+                "Temperature" -> setYAxisAndDataSet(0f, 50f, CelsiusValueFormatter(), chartTopic)
+                "Atmospheric pressure" -> setYAxisAndDataSet(
+                    970f,
+                    1030f,
+                    PressureValueFormatter(),
+                    chartTopic
+                )
+
+                "Wind speed" -> setYAxisAndDataSet(0f, 20f, SpeedValueFormatter(), chartTopic)
+            }
+            lineDataSet.color = Color.RED
+            lineDataSet.lineWidth = 3f
+
+            lineData = LineData(lineDataSet)
+        } else {
+            setYAxisAndDataSet(0f, 100f, MyValueFormatter(), chartTopic)
+            yAxis.axisLineWidth = 2f
+
+            barDataSet.color = Color.BLUE
+
+            barData = BarData(barDataSet)
+        }
+        combinedData.setData(lineData)
+        combinedData.setData(barData)
+
+        binding.mainChart.data = combinedData
+        binding.mainChart.invalidate()
+    }
+
+    private fun setYAxisAndDataSet(
+        minimum: Float,
+        maximum: Float,
+        valueFormatter: ValueFormatter,
+        chartTopic: ChartTopic
+    ) {
+        yAxis.axisMinimum = minimum
+        yAxis.axisMaximum = maximum
+        yAxis.valueFormatter = valueFormatter
+
+        when (chartTopic.topicChart) {
+            "Temperature", "Atmospheric pressure", "Wind speed" -> {
+                lineDataSet = LineDataSet(chartTopic.entryList, chartTopic.chartType)
+            }
+            else -> {
+                barDataSet = BarDataSet(chartTopic.barEntryList, chartTopic.chartType)
+            }
+        }
     }
 }
