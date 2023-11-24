@@ -38,8 +38,8 @@ class StatisticForecastActivity : AppCompatActivity() {
     private lateinit var xAxis: XAxis
     private lateinit var yAxis: YAxis
     private lateinit var yRightAxis: YAxis
-    private var barEntries: MutableList<BarEntry> = mutableListOf()
-    private var entries: MutableList<Entry> = mutableListOf()
+    private lateinit var barEntries: MutableList<BarEntry>
+    private lateinit var entries: MutableList<Entry>
     private val emptyEntries: List<Entry> = emptyList()
     private val emptyBarEntries: List<BarEntry> = emptyList()
     private lateinit var lineDataSet: LineDataSet
@@ -87,11 +87,6 @@ class StatisticForecastActivity : AppCompatActivity() {
             for ((index, item) in forecast.withIndex()) {
                 item.dt?.let { convertUnixTimestampToDateTime(it.toLong()) }
                     ?.let { xValues.add(it) }
-
-                val tempCelsius = item.main?.temp?.let { kelvinToCelsius(it) }
-                if (tempCelsius != null) {
-                    entries.add(Entry(index.toFloat(), tempCelsius))
-                }
             }
             setupChartSpinner()
         }
@@ -147,11 +142,19 @@ class StatisticForecastActivity : AppCompatActivity() {
     private fun setEntryValues(topic: String) {
         if (topic == "Temperature") {
             setDescriptionText("Temperature Trend over Time")
+            entries = mutableListOf()
+            for ((index, item) in weatherViewModel.forecastLiveData.value!!.withIndex()) {
+                val tempCelsius = item.main?.temp?.let { kelvinToCelsius(it) }
+                if (tempCelsius != null) {
+                    entries.add(Entry(index.toFloat(), tempCelsius))
+                }
+            }
             setDataChart("line", topic)
         }
         else if (topic == "Atmospheric pressure") {
             setDescriptionText("Atmospheric pressure Trend over Time")
 
+            entries = mutableListOf()
             for ((index, item) in weatherViewModel.forecastLiveData.value!!.withIndex()) {
                 val pressure = item.main?.pressure
                 if (pressure != null) {
@@ -163,6 +166,7 @@ class StatisticForecastActivity : AppCompatActivity() {
         else if (topic == "Cloudiness") {
             setDescriptionText("Time-Based Cloudiness Chart")
 
+            barEntries = mutableListOf()
             for ((index, item) in weatherViewModel.forecastLiveData.value!!.withIndex()) {
                 val cloudiness = item.clouds?.all
                 if (cloudiness != null) {
@@ -174,6 +178,7 @@ class StatisticForecastActivity : AppCompatActivity() {
         else if (topic == "Wind speed") {
             setDescriptionText("Wind speed pressure Trend over Time")
 
+            entries = mutableListOf()
             for ((index, item) in weatherViewModel.forecastLiveData.value!!.withIndex()) {
                 val speed = item.wind?.speed
                 if (speed != null) {
@@ -185,6 +190,7 @@ class StatisticForecastActivity : AppCompatActivity() {
         else {
             setDescriptionText("Time-Based Humidity Chart")
 
+            barEntries = mutableListOf()
             for ((index, item) in weatherViewModel.forecastLiveData.value!!.withIndex()) {
                 val humidity = item.main?.humidity
                 if (humidity != null) {

@@ -6,6 +6,8 @@ import androidx.lifecycle.ViewModel
 import com.example.weatherapp.model.ForecastData
 import com.example.weatherapp.model.WeatherData
 import com.example.weatherapp.retrofit.RetroInstance
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.Entry
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -14,6 +16,8 @@ class WeatherViewModel : ViewModel() {
     var weatherLiveData: MutableLiveData<WeatherData> = MutableLiveData()
     var forecastLiveData: MutableLiveData<List<com.example.weatherapp.model.List>> =
         MutableLiveData()
+    var entriesLiveData: MutableLiveData<List<Entry>> = MutableLiveData()
+    var barEntriesLiveData: MutableLiveData<List<BarEntry>> = MutableLiveData()
 
     fun callWeatherAPI(lat: Any, lon: Any, apikey: String) {
         RetroInstance.instance.getWeather(lat, lon, apikey).enqueue(object : Callback<WeatherData> {
