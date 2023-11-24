@@ -17,7 +17,7 @@
     <com.github.mikephil.charting.charts.CombinedChart
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:id="@+id/lineChart"
+        android:id="@+id/mainChart"
         app:layout_constraintTop_toBottomOf="@+id/spinnerChart"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
