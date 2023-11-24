@@ -266,10 +266,10 @@ class StatisticForecastActivity : AppCompatActivity() {
 
         when (chartTopic.topicChart) {
             "Temperature", "Atmospheric pressure", "Wind speed" -> {
-                lineDataSet = LineDataSet(chartTopic.entryList, chartTopic.chartType)
+                lineDataSet = LineDataSet(chartTopic.entryList, chartTopic.topicChart)
             }
             else -> {
-                barDataSet = BarDataSet(chartTopic.barEntryList, chartTopic.chartType)
+                barDataSet = BarDataSet(chartTopic.barEntryList, chartTopic.topicChart)
             }
         }
     }
