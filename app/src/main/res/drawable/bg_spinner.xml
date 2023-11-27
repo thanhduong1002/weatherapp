@@ -7,7 +7,7 @@
 
             <item>
                 <shape>
-                    <gradient android:angle="90" android:endColor="#ffffff" android:startColor="#ffffff" android:type="linear" />
+                    <gradient android:angle="90" android:endColor="@color/whiteText" android:startColor="@color/whiteText" android:type="linear" />
 
                     <stroke android:width="0.33dp" android:color="#0fb1fa" />
 

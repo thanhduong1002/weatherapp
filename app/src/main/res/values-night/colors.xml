@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="whiteText">#000000</color>
+    <color name="black">#FFFFFF</color>
+    <color name="backgroundTransparent">#0256E4</color>
+    <color name="mainBackground">#060f1b</color>
+    <color name="startLight">#041B2D</color>
+    <color name="endLight">#004E9A</color>
+    <color name="backGroundCard">#0256E4</color>
+    <color name="spinnerDrop">#000000</color>
+    <color name="textDropDown">#ffffff</color>
+</resources>
