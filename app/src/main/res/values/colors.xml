@@ -3,4 +3,12 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="green">#4CAF50</color>
+    <color name="whiteText">#ffffff</color>
+    <color name="backgroundTransparent">#3CF1EBF1</color>
+    <color name="mainBackground">#060f1b</color>
+    <color name="startLight">#1F2F98</color>
+    <color name="endLight">#1CA7EC</color>
+    <color name="backGroundCard">#FFFFFF</color>
+    <color name="spinnerDrop">#FFFFFF</color>
+    <color name="textDropDown">#000000</color>
 </resources>

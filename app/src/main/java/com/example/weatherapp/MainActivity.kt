@@ -15,6 +15,7 @@ import android.widget.Button
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.adapter.DetailForecastAdapter
@@ -56,6 +57,11 @@ class MainActivity : AppCompatActivity() {
         binding.seeMoreLinear.setOnClickListener {
             showPopupDialog()
         }
+        
+        binding.switchDarkMode.setOnCheckedChangeListener { button, isChecked ->
+            if (!isChecked) AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            else AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        }
     }
 
     private fun setupLocationSpinner() {
@@ -64,6 +70,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, R.layout.text_dropdown, locations)
         adapter.setDropDownViewResource(R.layout.spinner_text_dropdown)
         binding.spinnerLocation.adapter = adapter
+        binding.spinnerLocation.setPopupBackgroundResource(R.color.black)
 
         binding.spinnerLocation.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
