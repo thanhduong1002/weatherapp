@@ -17,13 +17,13 @@
         android:theme="@style/Theme.WeatherApp"
         tools:targetApi="31">
         <activity
-            android:name=".StatisticForecastActivity"
+            android:name=".ui.StatisticForecastActivity"
             android:exported="false" />
         <activity
-            android:name=".StatictisActivity"
+            android:name=".ui.StatictisActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
