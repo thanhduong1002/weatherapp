@@ -11,7 +11,7 @@ import retrofit2.Response
 
 class ProvinceViewModel : ViewModel() {
     var provinceLiveData: MutableLiveData<List<ProvinceData>> = MutableLiveData()
-    var provincesSearchLiveData: MutableLiveData<List<ProvinceData>> = MutableLiveData()
+
     fun callProvinceAPI() {
         RetroInstance.instanceProvince.getListProvinces().enqueue(object : Callback<List<ProvinceData>> {
             override fun onResponse(call: Call<List<ProvinceData>>, response: Response<List<ProvinceData>>) {

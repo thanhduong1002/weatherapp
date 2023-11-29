@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.Window
 import android.widget.AdapterView
@@ -65,74 +64,88 @@ class MainActivity : AppCompatActivity() {
         setupInitialWeatherAndForecast()
         setupRecyclerViewProvinces()
 
-        binding.seeMoreLinear.setOnClickListener {
-            showPopupDialog()
-        }
-        
-        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
-            if (!isChecked) AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-            else AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-        }
-
-        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean {
-                return false
+        binding.apply {
+            seeMoreLinear.setOnClickListener {
+                showPopupDialog()
             }
 
-            override fun onQueryTextChange(p0: String?): Boolean {
-                filterListProvinces(p0)
-                binding.recyclerViewProvinces.visibility = View.VISIBLE
-                return true
+            switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+                AppCompatDelegate.setDefaultNightMode(
+                    if (isChecked) AppCompatDelegate.MODE_NIGHT_YES
+                    else AppCompatDelegate.MODE_NIGHT_NO
+                )
             }
-        })
+
+            searchView.setOnQueryTextListener(object :
+                androidx.appcompat.widget.SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(p0: String?): Boolean {
+                    return false
+                }
+
+                override fun onQueryTextChange(p0: String?): Boolean {
+                    filterListProvinces(p0)
+                    binding.recyclerViewProvinces.visibility = View.VISIBLE
+                    return true
+                }
+            })
+        }
     }
 
     private fun setupLocationSpinner() {
         val locations = arrayOf("Hoa Vang", "Lien Chieu", "Thanh Khe", "Ngu Hanh Son", "Son Tra")
 
-        val adapter = ArrayAdapter(this, R.layout.text_dropdown, locations)
-        adapter.setDropDownViewResource(R.layout.spinner_text_dropdown)
-        binding.spinnerLocation.adapter = adapter
-        binding.spinnerLocation.setPopupBackgroundResource(R.color.black)
+        val adapter = ArrayAdapter(this, R.layout.text_dropdown, locations).apply {
+            setDropDownViewResource(R.layout.spinner_text_dropdown)
+        }
+        binding.spinnerLocation.apply {
+            setAdapter(adapter)
+            setPopupBackgroundResource(R.color.black)
+            onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        val selectedLocation = locations[position]
+                        val selectedDistrict =
+                            daNangDistricts.firstOrNull { it[0] == selectedLocation }
 
-        binding.spinnerLocation.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    val selectedLocation = locations[position]
-                    val selectedDistrict = daNangDistricts.firstOrNull { it[0] == selectedLocation }
+                        if (selectedDistrict != null) {
+                            val lat = selectedDistrict[1]
+                            val lon = selectedDistrict[2]
 
-                    if (selectedDistrict != null) {
-                        val lat = selectedDistrict[1]
-                        val lon = selectedDistrict[2]
+                            weatherViewModel.apply {
+                                callWeatherAPI(lat, lon, getString(R.string.apikey))
+                                callForecastAPI(lat, lon, getString(R.string.apikey))
+                            }
+                        }
+                    }
 
-                        weatherViewModel.callWeatherAPI(lat, lon, getString(R.string.apikey))
-                        weatherViewModel.callForecastAPI(lat, lon, getString(R.string.apikey))
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
                     }
                 }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                }
-            }
+        }
     }
 
     private fun setupRecyclerViewProvinces() {
         provinceViewModel.callProvinceAPI()
 
         provincesAdapter = ProvincesAdapter(emptyList())
-        binding.recyclerViewProvinces.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewProvinces.adapter = provincesAdapter
+        binding.recyclerViewProvinces.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = provincesAdapter
+        }
     }
 
     private fun observeProvincesLiveData() {
-        provinceViewModel.provinceLiveData.observe(this) {provinces ->
+        provinceViewModel.provinceLiveData.observe(this) { provinces ->
             provincesAdapter = ProvincesAdapter(provinces)
-            binding.recyclerViewProvinces.layoutManager = LinearLayoutManager(this)
-            binding.recyclerViewProvinces.adapter = provincesAdapter
+            binding.recyclerViewProvinces.apply {
+                layoutManager = LinearLayoutManager(this@MainActivity)
+                adapter = provincesAdapter
+            }
         }
     }
 
@@ -164,20 +177,26 @@ class MainActivity : AppCompatActivity() {
     private fun observeForecastLiveData() {
         weatherViewModel.forecastLiveData.observe(this) { forecast ->
             detailForecastAdapter = DetailForecastAdapter(forecast)
-            binding.detailForecastRecycler.layoutManager =
-                LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-            binding.detailForecastRecycler.adapter = detailForecastAdapter
+            binding.detailForecastRecycler.apply {
+                layoutManager =
+                    LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+                adapter = detailForecastAdapter
+            }
         }
     }
 
     private fun setupInitialWeatherAndForecast() {
-        weatherViewModel.callWeatherAPI(16.083, 108.0, getString(R.string.apikey))
-        weatherViewModel.callForecastAPI(16.083, 108.0, getString(R.string.apikey))
+        weatherViewModel.apply {
+            callWeatherAPI(16.083, 108.0, getString(R.string.apikey))
+            callForecastAPI(16.083, 108.0, getString(R.string.apikey))
+        }
 
         detailForecastAdapter = DetailForecastAdapter(emptyList())
-        binding.detailForecastRecycler.layoutManager =
-            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        binding.detailForecastRecycler.adapter = detailForecastAdapter
+        binding.detailForecastRecycler.apply {
+            layoutManager =
+                LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+            adapter = detailForecastAdapter
+        }
     }
 
 
@@ -217,11 +236,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showPopupDialog() {
-        val dialog = Dialog(this)
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog.setCancelable(false)
-        dialog.setContentView(R.layout.custom_popup)
-        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        val dialog = Dialog(this).apply {
+            requestWindowFeature(Window.FEATURE_NO_TITLE)
+            setCancelable(false)
+            setContentView(R.layout.custom_popup)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        }
 
         val radioGroup: RadioGroup = dialog.findViewById(R.id.radioGroup)
         val buttonOK: Button = dialog.findViewById(R.id.buttonOK)
@@ -237,13 +257,13 @@ class MainActivity : AppCompatActivity() {
                 val selectedText = selectedRadioButton.text.toString()
 
                 if (selectedText == getString(R.string._5_days)) {
-                    val intent = Intent(this, StatictisActivity::class.java)
-
-                    startActivity(intent)
+                    Intent(this, StatictisActivity::class.java).apply {
+                        startActivity(this)
+                    }
                 } else if (selectedText == getString(R.string.statistic_forecast)) {
-                    val intent = Intent(this, StatisticForecastActivity::class.java)
-
-                    startActivity(intent)
+                    Intent(this, StatisticForecastActivity::class.java).apply {
+                        startActivity(this)
+                    }
                 }
                 dialog.dismiss()
             } else {
@@ -260,6 +280,7 @@ class MainActivity : AppCompatActivity() {
 
         try {
             val date = inputFormat.parse(inputDateTime)
+
             return outputFormat.format(date!!)
         } catch (e: ParseException) {
             e.printStackTrace()
@@ -272,8 +293,9 @@ class MainActivity : AppCompatActivity() {
         if (newText != null) {
             val filteredList = ArrayList<ProvinceData>()
             for (i in provinceViewModel.provinceLiveData.value!!) {
-                if (i.name?.let { StringUtils.removeTinh(it).lowercase(Locale.ROOT).contains(newText) } == true) {
-                    Log.d("filteredList", "i: $i")
+                if (i.name?.let {
+                        StringUtils.removeTinh(it).lowercase(Locale.ROOT).contains(newText)
+                    } == true) {
                     filteredList.add(i)
                 }
             }
