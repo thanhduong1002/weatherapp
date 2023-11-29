@@ -12,7 +12,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="25dp"
-        tools:context=".MainActivity">
+        tools:context=".ui.MainActivity">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/materialCardView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="12dp"
+            app:cardUseCompatPadding="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:iconifiedByDefault="false"
+                app:queryBackground="@android:color/transparent"
+                app:queryHint="Search province or city here..." />
+
+        </com.google.android.material.card.MaterialCardView>
 
         <RelativeLayout
             android:id="@+id/relativePosition"
@@ -20,7 +42,7 @@
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/materialCardView">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -32,8 +54,8 @@
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_gravity="bottom"
-                    android:src="@drawable/ic_location"
-                    android:contentDescription="@string/icon_edit_location" />
+                    android:contentDescription="@string/icon_edit_location"
+                    android:src="@drawable/ic_location" />
 
                 <Spinner
                     android:id="@+id/spinnerLocation"
@@ -64,6 +86,41 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/relativePosition" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:id="@+id/recyclerViewProvinces"
+            app:layout_constraintTop_toBottomOf="@id/materialCardView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/linearMainInformation"
+            app:layout_constraintHorizontal_bias="0.5"
+            android:visibility="invisible"/>
+
+        <RelativeLayout
+            android:id="@+id/relativeNoFound"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/materialCardView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/linearMainInformation"
+            app:layout_constraintHorizontal_bias="0.5"
+            android:background="@color/whiteText"
+            android:visibility="invisible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textNotFound"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:text="@string/data_no_found"
+                android:layout_centerInParent="true"/>
+
+        </RelativeLayout>
 
         <LinearLayout
             android:id="@+id/linearMainInformation"
@@ -136,11 +193,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:baselineAligned="false"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/aboveLinear"
-            android:baselineAligned="false">
+            app:layout_constraintTop_toBottomOf="@+id/aboveLinear">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -155,9 +212,9 @@
                 <ImageView
                     android:layout_width="25dp"
                     android:layout_height="25dp"
+                    android:contentDescription="@string/icon_sunrise"
                     android:src="@drawable/sunrise"
-                    app:tint="@color/white"
-                    android:contentDescription="@string/icon_sunrise" />
+                    app:tint="@color/white" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -187,9 +244,9 @@
                 android:padding="8dp">
 
                 <ImageView
-                    android:contentDescription="@string/icon_sunset"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
+                    android:contentDescription="@string/icon_sunset"
                     android:src="@drawable/sunset"
                     app:tint="@color/white" />
 
@@ -224,8 +281,8 @@
                 <ImageView
                     android:layout_width="25dp"
                     android:layout_height="25dp"
-                    android:src="@drawable/info"
                     android:contentDescription="@string/icon_see_more"
+                    android:src="@drawable/info"
                     app:tint="@color/white" />
 
                 <TextView
@@ -252,11 +309,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="25dp"
+            android:baselineAligned="false"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/minMaxTemp"
-            android:baselineAligned="false">
+            app:layout_constraintTop_toBottomOf="@+id/minMaxTemp">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -269,9 +326,9 @@
                 android:padding="8dp">
 
                 <ImageView
-                    android:contentDescription="@string/icon_pressure"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
+                    android:contentDescription="@string/icon_pressure"
                     android:src="@drawable/pressure"
                     app:tint="@color/white" />
 
@@ -303,9 +360,9 @@
                 android:padding="8dp">
 
                 <ImageView
-                    android:contentDescription="@string/icon_humidity"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
+                    android:contentDescription="@string/icon_humidity"
                     android:src="@drawable/humidity"
                     app:tint="@color/white" />
 
@@ -337,9 +394,9 @@
                 android:padding="8dp">
 
                 <ImageView
-                    android:contentDescription="@string/icon_wind"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
+                    android:contentDescription="@string/icon_wind"
                     android:src="@drawable/wind"
                     app:tint="@color/white" />
 

@@ -1,9 +1,10 @@
-package com.example.weatherapp
+package com.example.weatherapp.ui
 
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.lifecycle.ViewModelProvider
+import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivityStatictisBinding
 import com.example.weatherapp.valueformat.CelsiusValueFormatter
 import com.example.weatherapp.valueformat.MyValueFormatter
