@@ -62,24 +62,29 @@ class StatisticForecastActivity : AppCompatActivity() {
     }
 
     private fun showChart() {
-        description.textColor = Color.RED
-        description.textSize = 16f
-        description.setPosition(800f, 30f)
+        description.apply {
+            textColor = Color.RED
+            textSize = 16f
+            setPosition(800f, 30f)
+        }
         binding.mainChart.description = description
 
-        xAxis = binding.mainChart.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.valueFormatter = IndexAxisValueFormatter(xValues)
-        xAxis.granularity = 1f
-        xAxis.labelCount = 32
+        xAxis = binding.mainChart.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+            valueFormatter = IndexAxisValueFormatter(xValues)
+            granularity = 1f
+            labelCount = 32
+        }
 
-        yAxis = binding.mainChart.axisLeft
-        yAxis.axisLineWidth = 2f
-        yAxis.axisLineColor = Color.BLACK
-        yAxis.labelCount = 10
+        yAxis = binding.mainChart.axisLeft.apply {
+            axisLineWidth = 2f
+            axisLineColor = Color.BLACK
+            labelCount = 10
+        }
 
-        yRightAxis = binding.mainChart.axisRight
-        yRightAxis.setDrawLabels(false)
+        yRightAxis = binding.mainChart.axisRight.apply {
+            setDrawLabels(false)
+        }
     }
 
     private fun observeForecastLiveData() {
@@ -110,24 +115,26 @@ class StatisticForecastActivity : AppCompatActivity() {
         val topics =
             arrayOf("Temperature", "Humidity", "Atmospheric pressure", "Cloudiness", "Wind speed")
 
-        val adapter = ArrayAdapter(this, R.layout.text_dropdown, topics)
-        adapter.setDropDownViewResource(R.layout.spinner_text_dropdown)
-        binding.spinnerChart.adapter = adapter
+        val adapter = ArrayAdapter(this, R.layout.text_dropdown, topics).apply {
+            setDropDownViewResource(R.layout.spinner_text_dropdown)
+        }
+        binding.spinnerChart.apply {
+            setAdapter(adapter)
+            onItemSelectedListener =
+                object : AdapterView.OnItemSelectedListener {
+                    override fun onItemSelected(
+                        parent: AdapterView<*>?,
+                        view: View?,
+                        position: Int,
+                        id: Long
+                    ) {
+                        setTopic(topics[position])
+                    }
 
-        binding.spinnerChart.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    setTopic(topics[position])
+                    override fun onNothingSelected(parent: AdapterView<*>?) {
+                    }
                 }
-
-                override fun onNothingSelected(parent: AdapterView<*>?) {
-                }
-            }
+        }
     }
 
     private fun setTopic(topic: String) {
@@ -236,8 +243,10 @@ class StatisticForecastActivity : AppCompatActivity() {
 
                 "Wind speed" -> setYAxisAndDataSet(0f, 20f, SpeedValueFormatter(), chartTopic)
             }
-            lineDataSet.color = Color.RED
-            lineDataSet.lineWidth = 3f
+            lineDataSet.apply {
+                color = Color.RED
+                lineWidth = 3f
+            }
 
             lineData = LineData(lineDataSet)
         } else {
@@ -261,9 +270,11 @@ class StatisticForecastActivity : AppCompatActivity() {
         valueFormatter: ValueFormatter,
         chartTopic: ChartTopic
     ) {
-        yAxis.axisMinimum = minimum
-        yAxis.axisMaximum = maximum
-        yAxis.valueFormatter = valueFormatter
+        yAxis.apply {
+            axisMinimum = minimum
+            axisMaximum = maximum
+            setValueFormatter(valueFormatter)
+        }
 
         when (chartTopic.topicChart) {
             "Temperature", "Atmospheric pressure", "Wind speed" -> {

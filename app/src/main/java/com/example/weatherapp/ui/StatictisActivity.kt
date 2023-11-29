@@ -36,8 +36,6 @@ class StatictisActivity : AppCompatActivity() {
     private var barEntries1: MutableList<BarEntry> = mutableListOf()
     private lateinit var lineDataSet: LineDataSet
     private lateinit var barDataSet: BarDataSet
-    private lateinit var lineData: LineData
-    private lateinit var barData: BarData
     private lateinit var weatherViewModel: WeatherViewModel
     private var combinedData: CombinedData = CombinedData()
 
@@ -70,45 +68,51 @@ class StatictisActivity : AppCompatActivity() {
     }
 
     private fun showCombinedChart() {
-        description.text = "Temp and Humidity Record"
-        description.textColor = Color.RED
-        description.textSize = 16f
-        description.setPosition(800f, 30f)
+        description.apply {
+            text = "Temp and Humidity Record"
+            textColor = Color.RED
+            textSize = 16f
+            setPosition(800f, 30f)
+        }
         binding.chartCombined.description = description
 
-        xAxis = binding.chartCombined.xAxis
-        xAxis.position = XAxis.XAxisPosition.BOTTOM
-        xAxis.valueFormatter = IndexAxisValueFormatter(xValues)
-        xAxis.granularity = 1f
-        xAxis.labelCount = 32
+        xAxis = binding.chartCombined.xAxis.apply {
+            position = XAxis.XAxisPosition.BOTTOM
+            valueFormatter = IndexAxisValueFormatter(xValues)
+            granularity = 1f
+            labelCount = 32
+        }
 
-        yAxis = binding.chartCombined.axisLeft
-        yAxis.axisMinimum = 0f
-        yAxis.axisMaximum = 100f
-        yAxis.axisLineWidth = 2f
-        yAxis.axisLineColor = Color.BLACK
-        yAxis.labelCount = 10
-        yAxis.valueFormatter = CelsiusValueFormatter()
+        yAxis = binding.chartCombined.axisLeft.apply {
+            axisMinimum = 0f
+            axisMaximum = 100f
+            axisLineWidth = 2f
+            axisLineColor = Color.BLACK
+            labelCount = 10
+            valueFormatter = CelsiusValueFormatter()
+        }
 
-        yRightAxis = binding.chartCombined.axisRight
-        yRightAxis.axisMinimum = 0f
-        yRightAxis.axisMaximum = 100f
-        yRightAxis.axisLineWidth = 2f
-        yRightAxis.axisLineColor = Color.BLACK
-        yRightAxis.labelCount = 10
-        yRightAxis.valueFormatter = MyValueFormatter()
+        yRightAxis = binding.chartCombined.axisRight.apply {
+            axisMinimum = 0f
+            axisMaximum = 100f
+            axisLineWidth = 2f
+            axisLineColor = Color.BLACK
+            labelCount = 10
+            valueFormatter = MyValueFormatter()
+        }
 
-        barDataSet = BarDataSet(barEntries1, "Humidity")
-        barDataSet.color = Color.BLUE
-        lineDataSet = LineDataSet(entries1, "Temp")
-        lineDataSet.color = Color.RED
-        lineDataSet.lineWidth = 3f
+        barDataSet = BarDataSet(barEntries1, "Humidity").apply {
+            color = Color.BLUE
+        }
+        lineDataSet = LineDataSet(entries1, "Temp").apply {
+            color = Color.RED
+            lineWidth = 3f
+        }
 
-        barData = BarData(barDataSet)
-        lineData = LineData(lineDataSet)
-
-        combinedData.setData(barData)
-        combinedData.setData(lineData)
+        combinedData.apply {
+            setData(BarData(barDataSet))
+            setData(LineData(lineDataSet))
+        }
 
         binding.chartCombined.data = combinedData
 
