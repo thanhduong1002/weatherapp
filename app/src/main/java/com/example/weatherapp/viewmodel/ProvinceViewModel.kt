@@ -13,6 +13,7 @@ import retrofit2.Response
 
 class ProvinceViewModel : ViewModel() {
     var provinceLiveData: MutableLiveData<List<ProvinceData>> = MutableLiveData()
+    var nameProvinceLiveData: MutableLiveData<List<String?>> = MutableLiveData()
     var listDistrictsLiveData: MutableLiveData<List<Districts>> = MutableLiveData()
     fun callProvinceAPI() {
         RetroInstance.instanceProvince.getListProvinces().enqueue(object : Callback<List<ProvinceData>> {
@@ -20,6 +21,7 @@ class ProvinceViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     val provincesResponse = response.body()
 
+                    provincesResponse.map { it.name }.let { nameProvinceLiveData.postValue(it) }
                     provinceLiveData.postValue(provincesResponse)
                 } else {
                     val provincesResponse = response.body()

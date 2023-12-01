@@ -53,6 +53,7 @@ class MainActivity : AppCompatActivity(), IChooseProvince {
         arrayOf("Son Tra", 16.0820, 108.2244)
     )
     private lateinit var listLatLonDistrict: List<LatLonDistrict>
+    private var listNameProvince: List<String?> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +69,7 @@ class MainActivity : AppCompatActivity(), IChooseProvince {
         observeWeatherLiveData()
         observeForecastLiveData()
         observeProvincesLiveData()
-        observeListDistrictsLiveData()
+        observeListDistrictsAndNameProvinceLiveData()
 
         setupInitialWeatherAndForecast()
         setupRecyclerViewProvinces()
@@ -229,9 +230,13 @@ class MainActivity : AppCompatActivity(), IChooseProvince {
         }
     }
 
-    private fun observeListDistrictsLiveData() {
+    private fun observeListDistrictsAndNameProvinceLiveData() {
         provinceViewModel.listDistrictsLiveData.observe(this) { list ->
             setupLocationSpinner(list.map { it.name })
+        }
+
+        provinceViewModel.nameProvinceLiveData.observe(this) {list ->
+            listNameProvince = list
         }
     }
 
@@ -350,7 +355,7 @@ class MainActivity : AppCompatActivity(), IChooseProvince {
                 }
             }
 
-            if (filteredList.isEmpty()) {
+            if (filteredList.isEmpty() && !listNameProvince.any { it?.contains(newText)!! }) {
                 binding.relativeNoFound.visibility = View.VISIBLE
             } else {
                 provincesAdapter.setListProvince(filteredList.toList())
