@@ -1,7 +1,9 @@
 package com.example.weatherapp.ui
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -9,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import android.view.Window
+import android.view.inputmethod.InputMethodManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
@@ -18,10 +21,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.weatherapp.data.DataDistricts
 import com.example.weatherapp.R
 import com.example.weatherapp.adapter.DetailForecastAdapter
 import com.example.weatherapp.adapter.ProvincesAdapter
 import com.example.weatherapp.databinding.ActivityMainBinding
+import com.example.weatherapp.interfaces.IChooseProvince
+import com.example.weatherapp.model.LatLonDistrict
 import com.example.weatherapp.model.ProvinceData
 import com.example.weatherapp.utils.StringUtils
 import com.example.weatherapp.viewmodel.ProvinceViewModel
@@ -33,7 +39,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), IChooseProvince {
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherViewModel: WeatherViewModel
     private lateinit var provinceViewModel: ProvinceViewModel
@@ -46,13 +52,15 @@ class MainActivity : AppCompatActivity() {
         arrayOf("Ngu Hanh Son", 16.0590, 108.2448),
         arrayOf("Son Tra", 16.0820, 108.2244)
     )
+    private lateinit var listLatLonDistrict: List<LatLonDistrict>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupLocationSpinner()
+        setupLocationSpinner(emptyList())
+        listLatLonDistrict = DataDistricts().loadDataDistricts()
 
         weatherViewModel = ViewModelProvider(this)[WeatherViewModel::class.java]
         provinceViewModel = ViewModelProvider(this)[ProvinceViewModel::class.java]
@@ -60,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         observeWeatherLiveData()
         observeForecastLiveData()
         observeProvincesLiveData()
+        observeListDistrictsLiveData()
 
         setupInitialWeatherAndForecast()
         setupRecyclerViewProvinces()
@@ -74,6 +83,8 @@ class MainActivity : AppCompatActivity() {
                     if (isChecked) AppCompatDelegate.MODE_NIGHT_YES
                     else AppCompatDelegate.MODE_NIGHT_NO
                 )
+                relativeNoFound.visibility = View.INVISIBLE
+                recyclerViewProvinces.visibility = View.INVISIBLE
             }
 
             searchView.setOnQueryTextListener(object :
@@ -91,12 +102,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupLocationSpinner() {
-        val locations = arrayOf("Hoa Vang", "Lien Chieu", "Thanh Khe", "Ngu Hanh Son", "Son Tra")
+    private fun setupLocationSpinner(listDistricts: List<String?>) {
+        val locations = listOf("Hoa Vang", "Lien Chieu", "Thanh Khe", "Ngu Hanh Son", "Son Tra")
 
-        val adapter = ArrayAdapter(this, R.layout.text_dropdown, locations).apply {
-            setDropDownViewResource(R.layout.spinner_text_dropdown)
+        val adapter = if (listDistricts.isEmpty()) {
+            ArrayAdapter(this, R.layout.text_dropdown, locations)
+        } else {
+            ArrayAdapter(this, R.layout.text_dropdown, listDistricts)
         }
+
+        adapter.setDropDownViewResource(R.layout.spinner_text_dropdown)
+
         binding.spinnerLocation.apply {
             setAdapter(adapter)
             setPopupBackgroundResource(R.color.black)
@@ -108,17 +124,37 @@ class MainActivity : AppCompatActivity() {
                         position: Int,
                         id: Long
                     ) {
-                        val selectedLocation = locations[position]
-                        val selectedDistrict =
-                            daNangDistricts.firstOrNull { it[0] == selectedLocation }
+                        if (listDistricts.isNotEmpty()) {
+                            val selectedLocation = listDistricts[position]
 
-                        if (selectedDistrict != null) {
-                            val lat = selectedDistrict[1]
-                            val lon = selectedDistrict[2]
+                            listLatLonDistrict.find { it.name == selectedLocation }
+                                ?.let { district ->
+                                    weatherViewModel.apply {
+                                        callWeatherAPI(
+                                            district.lat,
+                                            district.lon,
+                                            getString(R.string.apikey)
+                                        )
+                                        callForecastAPI(
+                                            district.lat,
+                                            district.lon,
+                                            getString(R.string.apikey)
+                                        )
+                                    }
+                                }
+                        } else {
+                            val selectedLocation = locations[position]
+                            val selectedDistrict =
+                                daNangDistricts.firstOrNull { it[0] == selectedLocation }
 
-                            weatherViewModel.apply {
-                                callWeatherAPI(lat, lon, getString(R.string.apikey))
-                                callForecastAPI(lat, lon, getString(R.string.apikey))
+                            selectedDistrict?.let {
+                                val lat = selectedDistrict[1]
+                                val lon = selectedDistrict[2]
+
+                                weatherViewModel.apply {
+                                    callWeatherAPI(lat, lon, getString(R.string.apikey))
+                                    callForecastAPI(lat, lon, getString(R.string.apikey))
+                                }
                             }
                         }
                     }
@@ -132,7 +168,7 @@ class MainActivity : AppCompatActivity() {
     private fun setupRecyclerViewProvinces() {
         provinceViewModel.callProvinceAPI()
 
-        provincesAdapter = ProvincesAdapter(emptyList())
+        provincesAdapter = ProvincesAdapter(emptyList(), this)
         binding.recyclerViewProvinces.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = provincesAdapter
@@ -141,7 +177,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeProvincesLiveData() {
         provinceViewModel.provinceLiveData.observe(this) { provinces ->
-            provincesAdapter = ProvincesAdapter(provinces)
+            provincesAdapter = ProvincesAdapter(provinces, this)
             binding.recyclerViewProvinces.apply {
                 layoutManager = LinearLayoutManager(this@MainActivity)
                 adapter = provincesAdapter
@@ -152,36 +188,50 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun observeWeatherLiveData() {
         weatherViewModel.weatherLiveData.observe(this) { weather ->
-            binding.apply {
-                status.text = weather?.weather?.get(0)?.description?.let { capitalizeEachWord(it) }
-                Picasso.get()
-                    .load("https://openweathermap.org/img/w/${weather.weather[0].icon}.png")
-                    .into(icon)
-                temp.text = "${weather.main?.temp?.let { kelvinToCelsius(it) }}°C"
-                textMinTemp.text =
-                    "Min temp: ${weather.main?.tempMin?.let { kelvinToCelsius(it) }}°C"
-                textMaxTemp.text =
-                    "Max temp: ${weather.main?.tempMax?.let { kelvinToCelsius(it) }}°C"
-                pressure.text = "${weather.main?.pressure} hPa"
-                humidity.text = "${weather.main?.humidity}%"
-                wind.text = "${weather.wind?.speed} m/s"
-                sunrise.text =
-                    "${weather.sys?.sunrise?.toLong()?.let { convertUnixTimestampToTime(it) }}"
-                sunset.text =
-                    "${weather.sys?.sunset?.toLong()?.let { convertUnixTimestampToTime(it) }}"
-                textUpdate.text = "Update at: ${getCurrentDateTime()}"
+            if (weather != null) {
+                binding.apply {
+                    status.text = weather.weather[0].description?.let { capitalizeEachWord(it) }
+                    Picasso.get()
+                        .load("https://openweathermap.org/img/w/${weather.weather[0].icon}.png")
+                        .into(icon)
+                    temp.text = "${weather.main?.temp?.let { kelvinToCelsius(it) }}°C"
+                    textMinTemp.text =
+                        "Min temp: ${weather.main?.tempMin?.let { kelvinToCelsius(it) }}°C"
+                    textMaxTemp.text =
+                        "Max temp: ${weather.main?.tempMax?.let { kelvinToCelsius(it) }}°C"
+                    pressure.text = "${weather.main?.pressure} hPa"
+                    humidity.text = "${weather.main?.humidity}%"
+                    wind.text = "${weather.wind?.speed} m/s"
+                    sunrise.text =
+                        "${weather.sys?.sunrise?.toLong()?.let { convertUnixTimestampToTime(it) }}"
+                    sunset.text =
+                        "${weather.sys?.sunset?.toLong()?.let { convertUnixTimestampToTime(it) }}"
+                    textUpdate.text = "Update at: ${getCurrentDateTime()}"
+                }
             }
         }
     }
 
     private fun observeForecastLiveData() {
         weatherViewModel.forecastLiveData.observe(this) { forecast ->
-            detailForecastAdapter = DetailForecastAdapter(forecast)
-            binding.detailForecastRecycler.apply {
-                layoutManager =
-                    LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
-                adapter = detailForecastAdapter
+            if (forecast != null) {
+                detailForecastAdapter = DetailForecastAdapter(forecast)
+                binding.detailForecastRecycler.apply {
+                    layoutManager =
+                        LinearLayoutManager(
+                            this@MainActivity,
+                            LinearLayoutManager.HORIZONTAL,
+                            false
+                        )
+                    adapter = detailForecastAdapter
+                }
             }
+        }
+    }
+
+    private fun observeListDistrictsLiveData() {
+        provinceViewModel.listDistrictsLiveData.observe(this) { list ->
+            setupLocationSpinner(list.map { it.name })
         }
     }
 
@@ -306,6 +356,27 @@ class MainActivity : AppCompatActivity() {
                 provincesAdapter.setListProvince(filteredList.toList())
                 binding.relativeNoFound.visibility = View.INVISIBLE
             }
+        }
+    }
+
+    override fun onClickProvince(nameProvince: String, codeProvince: Int) {
+        provinceViewModel.getDetailProvinceByCode(codeProvince, 2)
+        binding.apply {
+            searchView.setQuery(StringUtils.removeTinh(nameProvince), false)
+            recyclerViewProvinces.visibility = View.INVISIBLE
+            relativeNoFound.visibility = View.INVISIBLE
+        }
+        hideKeyboard(this)
+    }
+
+    private fun hideKeyboard(activity: Activity) {
+        val inputMethodManager =
+            activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+        val view = activity.currentFocus
+
+        if (view != null) {
+            inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
         }
     }
 }
