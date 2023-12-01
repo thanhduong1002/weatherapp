@@ -5,10 +5,14 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.databinding.ProvinceItemBinding
+import com.example.weatherapp.interfaces.IChooseProvince
 import com.example.weatherapp.model.ProvinceData
 import com.example.weatherapp.utils.StringUtils
 
-class ProvincesAdapter(private var listProvince: List<ProvinceData>) :
+class ProvincesAdapter(
+    private var listProvince: List<ProvinceData>,
+    private var listener: IChooseProvince
+) :
     RecyclerView.Adapter<ProvincesAdapter.ProvincesViewHolder>() {
 
     @SuppressLint("NotifyDataSetChanged")
@@ -16,6 +20,7 @@ class ProvincesAdapter(private var listProvince: List<ProvinceData>) :
         this.listProvince = listProvince
         notifyDataSetChanged()
     }
+
     inner class ProvincesViewHolder(val provinceItemBinding: ProvinceItemBinding) :
         RecyclerView.ViewHolder(provinceItemBinding.root)
 
@@ -41,6 +46,13 @@ class ProvincesAdapter(private var listProvince: List<ProvinceData>) :
             nameProvince.text = item.name?.let { StringUtils.removeTinh(it) }
             numberVehicle.text = item.name?.let { StringUtils.removeTinh(it) }
                 ?.let { getLicensePlateNumber(it) }
+            cardProvinceItem.setOnClickListener {
+                item.name?.let { name ->
+                    item.code?.let { code ->
+                        listener.onClickProvince(name, code)
+                    }
+                }
+            }
         }
     }
 
