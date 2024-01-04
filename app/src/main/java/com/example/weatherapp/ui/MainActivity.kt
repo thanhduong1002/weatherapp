@@ -9,6 +9,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.inputmethod.InputMethodManager
@@ -178,10 +179,14 @@ class MainActivity : AppCompatActivity(), IChooseProvince {
 
     private fun observeProvincesLiveData() {
         provinceViewModel.provinceLiveData.observe(this) { provinces ->
-            provincesAdapter = ProvincesAdapter(provinces, this)
-            binding.recyclerViewProvinces.apply {
-                layoutManager = LinearLayoutManager(this@MainActivity)
-                adapter = provincesAdapter
+            if (provinces != null) {
+                provincesAdapter = ProvincesAdapter(provinces, this)
+                binding.recyclerViewProvinces.apply {
+                    layoutManager = LinearLayoutManager(this@MainActivity)
+                    adapter = provincesAdapter
+                }
+            } else {
+                Log.d("provinces", "provinces: null")
             }
         }
     }
